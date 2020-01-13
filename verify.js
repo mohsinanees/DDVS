@@ -14,17 +14,18 @@ const setEntry = (context, address, stateValue) => {
     return context.setState(entries)
 }
 
-const authorizerVerify = (possibleAddressValues, address, payload) => {
+const authorizerVerify = (possibleAddressValues, address, authorizerDid, 
+    authorizerVerKey, authorizerSignature, nonce) => {
     let stateValueRep = possibleAddressValues[address]
     let stateValue
     if (stateValueRep && stateValueRep.length > 0) {
         stateValue = cbor.decodeFirstSync(stateValueRep)
-        if (payload.authorizerDid == stateValue.destDid) {
-            if (payload.authorizerVerKey == stateValue.destVerKey) {
+        if (authorizerDid == stateValue.destDid) {
+            if (authorizerVerKey == stateValue.destVerKey) {
                 if (stateValue.role == authorizer) {
-                    let PubKey = Secp256k1PublicKey.fromHex(payload.authorizerVerKey)
+                    let PubKey = Secp256k1PublicKey.fromHex(authorizerVerKey)
                     let signer = new Secp256k1Context()
-                    let status = signer.verify(payload.authorizerSignature, payload.nonce, PubKey)
+                    let status = signer.verify(authorizerSignature, nonce, PubKey)
                     return status
                 }
             }
@@ -33,17 +34,18 @@ const authorizerVerify = (possibleAddressValues, address, payload) => {
     return false
 }
 
-const issuerVerify = (possibleAddressValues, address, payload) => {
+const issuerVerify = (possibleAddressValues, address, issuerDid, issuerVerKey, 
+    issuerSignature, nonce) => {
     let stateValueRep = possibleAddressValues[address]
     let stateValue
     if (stateValueRep && stateValueRep.length > 0) {
         stateValue = cbor.decodeFirstSync(stateValueRep)
-        if (payload.sourceDid == stateValue.destDid) {
-            if (payload.sourceVerKey == stateValue.destVerKey) {
+        if (issuerDid == stateValue.destDid) {
+            if (issuerVerKey == stateValue.destVerKey) {
                 if (stateValue.role == issuer || stateValue.role == authorizer) {
-                    let PubKey = Secp256k1PublicKey.fromHex(payload.sourceVerKey)
+                    let PubKey = Secp256k1PublicKey.fromHex(issuerVerKey)
                     let signer = new Secp256k1Context()
-                    let status = signer.verify(payload.issuerSignature, payload.nonce, PubKey)
+                    let status = signer.verify(issuerSignature, nonce, PubKey)
                     return status
                 }
             }
@@ -52,16 +54,17 @@ const issuerVerify = (possibleAddressValues, address, payload) => {
     return false
 }
 
-const requesterVerify = (possibleAddressValues, address, payload) => {
+const requesterVerify = (possibleAddressValues, address, requesterDid, requesterVerKey,
+    issuerSignature, nonce) => {
     let stateValueRep = possibleAddressValues[address]
     let stateValue
     if (stateValueRep && stateValueRep.length > 0) {
         stateValue = cbor.decodeFirstSync(stateValueRep)
-        if (payload.sourceDid == stateValue.destDid) {
-            if (payload.sourceVerKey == stateValue.sourceVerKey) {
-                let PubKey = Secp256k1PublicKey.fromHex(stateValue.sourceVerKey)
+        if (requesterDid == stateValue.destDid) {
+            if (requesterVerKey == stateValue.sourceVerKey) {
+                let PubKey = Secp256k1PublicKey.fromHex(requesterVerKey)
                 let signer = new Secp256k1Context()
-                let status = signer.verify(payload.authorizerSignature, payload.nonce, PubKey)
+                let status = signer.verify(issuerSignature, nonce, PubKey)
                 return status
             }
         }
@@ -69,19 +72,46 @@ const requesterVerify = (possibleAddressValues, address, payload) => {
     return false
 }
 
-const schemaVerify = (possibleAddressValues, address, payload) => {
+const schemaVerify = (possibleAddressValues, address, authorizerDid, authorizerVerKey,
+    authorizerSignature, nonce) => {
     let stateValueRep = possibleAddressValues[address]
     let stateValue
     if (stateValueRep && stateValueRep.length > 0) {
         stateValue = cbor.decodeFirstSync(stateValueRep)
-        if (payload.authorizerDid == stateValue.sourceDid) {
-            if (payload.authorizerVerKey == stateValue.sourceVerKey) {
-                let PubKey = Secp256k1PublicKey.fromHex(stateValue.sourceVerKey)
+        if (authorizerDid == stateValue.sourceDid) {
+            if (authorizerVerKey == stateValue.sourceVerKey) {
+                let PubKey = Secp256k1PublicKey.fromHex(authorizerVerKey)
                 let signer = new Secp256k1Context()
-                let status = signer.verify(payload.authorizerSignature, payload.nonce, PubKey)
+                let status = signer.verify(authorizerSignature, nonce, PubKey)
                 return status
             }
         }
+    }
+    return false
+}
+
+const credentialVerify = (possibleAddressValues, address, issuerDid, issuerVerKey,
+    issuerSignature, nonce) => {
+    let stateValueRep = possibleAddressValues[address]
+    let stateValue
+    if (stateValueRep && stateValueRep.length > 0) {
+        stateValue = cbor.decodeFirstSync(stateValueRep)
+        if (issuerDid == stateValue.sourceDid) {
+            if (issuerVerKey == stateValue.sourceVerKey) {
+                let PubKey = Secp256k1PublicKey.fromHex(issuerVerKey)
+                let signer = new Secp256k1Context()
+                let status = signer.verify(issuerSignature, nonce, PubKey)
+                return status
+            }
+        }
+    }
+    return false
+}
+
+const credentialExist = (possibleAddressValues, address) => {
+    let stateValueRep = possibleAddressValues[address]
+    if (stateValueRep && stateValueRep.length > 0) {
+        return true
     }
     return false
 }
@@ -100,5 +130,6 @@ module.exports = {
     requesterVerify,
     schemaVerify,
     requesterExist,
+    credentialExist,
     setEntry
 }

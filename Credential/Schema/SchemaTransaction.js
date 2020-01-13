@@ -29,21 +29,17 @@ class SchemaTransaction {
 
     let transactions = []
     records.forEach((record) => {
-      let sourceDid = _genDIDAddress(record.sourceVerKey)
       const payload = {
-        sourceDid: sourceDid,
+        sourceDid: record.sourceDid,
         sourceVerKey: record.sourceVerKey,
-        schemaID: createHash('sha256').update(JSON.stringify(record.attributes)).digest('hex'),
         version: record.version,
         title: record.title,
         nonce: record.nonce,
-        signature: signer.sign(Buffer.from(record.nonce)),
+        signature: record.signature,
         attributes: record.attributes
       }
 
-      let address = _genSchemaAddress(payload.schemaID)
       const payloadBytes = cbor.encode(payload)
-
       const transactionHeaderBytes = protobuf.TransactionHeader.encode({
         familyName: schema_family,
         familyVersion: version,

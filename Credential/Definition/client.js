@@ -28,7 +28,7 @@ let record = {
   }
 }
 
-function start(offset) {
+function start() {
   const transaction = new CredentialTransaction(authorPrivateKey, issuerPrivateKey)
   const records = [record]
   const transactions = transaction.CreateTransactions(records)
@@ -36,4 +36,4 @@ function start(offset) {
   transaction.SubmitBatch(batch)
 }
 
-start(offset = 0)
+start()

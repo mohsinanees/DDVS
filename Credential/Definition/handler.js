@@ -19,6 +19,7 @@ const {
   requesterVerify,
   schemaVerify,
   requesterExist,
+  credentialExist,
   setEntry
 } = require("../../verify")
 var count = 0
@@ -45,17 +46,25 @@ class CredentialHandler extends TransactionHandler {
 
     // get state value of all the entities and schema
     let result = await context.getState([authorizerAddress, issuerAddress,
-      schemaAddress, requesterAddress])
+      schemaAddress, requesterAddress, credentialAddress])
 
     // verify authorizer, issuer, requester, schema 
-    let authorizerStatus = authorizerVerify(result, authorizerAddress, payload)
+    let authorizerStatus = authorizerVerify(result, authorizerAddress, payload.authorizerDid,
+      payload.authorizerVerKey, payload.authorizerSignature, payload.nonce)
     if (authorizerStatus) {
-      let issuerStatus = issuerVerify(result, issuerAddress, payload)
+      let issuerStatus = issuerVerify(result, issuerAddress, payload.sourceDid, payload.sourceVerKey,
+        payload.issuerSignature, payload.nonce)
       if (issuerStatus) {
-        let schemaStatus = schemaVerify(result, schemaAddress, payload)
+        let schemaStatus = schemaVerify(result, schemaAddress, payload.authorizerDid, payload.authorizerVerKey,
+          payload.authorizerSignature, payload.nonce)
         if (schemaStatus) {
           let requesterStatus = requesterExist(result, requesterAddress)
-          if (!requesterStatus) {
+          if (requesterStatus) {
+            let credentialStatus = credentialExist(result, credentialAddress)
+            if (credentialStatus) {
+              throw new InvalidTransaction("Credential already exist")
+            }
+          } else {
             throw new InvalidTransaction("Invalid Requester")
           }
         } else {

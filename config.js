@@ -6,9 +6,9 @@ module.exports = {
     BATCH_URL: 'http://127.0.0.1:8008/batches',
     Log_Dir: '/home/mohsin/logs',
     request_type: {
-        conection_request: 'Connection',
-        authorization_request: 'Authorization',
-        cred_claim_request: 'CredentialClaim'
+        conection_request: 'connection',
+        authorization_request: 'authorization',
+        cred_claim_request: 'credentialclaim'
     },
     roles: {
         authorizer: "authorizer",

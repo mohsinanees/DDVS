@@ -36,7 +36,8 @@ class SchemaHandler extends TransactionHandler {
     let actionPromise
     let res = await context.getState([authorAddress, schemaAddress])
 
-    let status = authorizerVerify(res, authorAddress, payload)
+    let status = authorizerVerify(res, authorAddress, payload.sourceDid, payload.sourceVerKey, 
+      payload.signature, payload.nonce)
     if (status) {
       actionPromise = setEntry(context, schemaAddress, payload)
       if (actionPromise) {

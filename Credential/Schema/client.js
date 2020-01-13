@@ -2,34 +2,49 @@
 const SchemaClient = require('./SchemaTransaction')
 const fs = require('fs')
 const USER = require("os").userInfo().username
-const authorPrivateKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
-const authorPubKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.pub`, 'utf8')
+const privateKeyHex = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
 
-let record = {
-  sourceVerKey: authorPubKey,
-  version: "0.7",
-  title: "Report Card",
-  nonce: "123456789",
-  attributes: {
-    institute: "Institute Name",
-    name: "Student Name",
-    cnic: "Cnic",
-    regid: "Registration Number",
-    level: "Level",
-    totalmarks: "Total Marks",
-    obtainedmarks: "Obtained Marks",
-    subjects: "Subjects",
-    subjectmarks: "Subject Marks",
-    passingyear: "Passing Year"
+// let record = {
+//   sourceVerKey: authorPubKey,
+//   version: "0.7",
+//   title: "Transcript",
+//   nonce: "123456789",
+//   attributes: {
+//     institute: "institute_Name",
+//     name: "student_name",
+//     cnic: "cnic",
+//     regid: "registration_number",
+//     level: "level",
+//     totalmarks: "total_marks",
+//     obtainedmarks: "obtained_marks",
+//     subjects: "subjects",
+//     subjectmarks: "subject_marks",
+//     passingyear: "passing_year"
+//   }
+// }
+
+function submitSchema(sourceDid, sourceVerKey, version, title, nonce, signature, attributes) {
+  let record = {
+    sourceDid: sourceDid,
+    sourceVerKey: sourceVerKey,
+    version: version,
+    title: title,
+    nonce: nonce,
+    signature: signature,
+    attributes: attributes
   }
-}
-
-function start(offset) {
-  const client = new SchemaClient(authorPrivateKey)
+  const client = new SchemaClient(privateKeyHex)
   const records = [record]
   const transactions = client.CreateTransactions(records)
   const batch = client.CreateBatch(transactions)
-  client.SubmitBatch(batch)
+  try {
+    let status  = client.SubmitBatch(batch)
+    // console.log(decodeUriComponent(status))
+    return true
+  } catch (err) {
+    console.log(err)
+    return false
+  }
 }
 
-start(offset = 0)
+module.exports = submitSchema

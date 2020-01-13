@@ -16,14 +16,11 @@ const {
 
 
 class DIDTransaction {
-  constructor(privateKeyHex, issuerPrivateKey) {
+  constructor(privateKeyHex) {
     this.context = createContext('secp256k1')
     this.privateKey = Secp256k1PrivateKey.fromHex(privateKeyHex)
     let signer = new CryptoFactory(this.context)
     this.signer = signer.newSigner(this.privateKey)
-    this.issuerPrivateKey = Secp256k1PrivateKey.fromHex(issuerPrivateKey)
-    let issuer = new CryptoFactory(this.context)
-    this.issuer = issuer.newSigner(this.issuerPrivateKey)
   }
 
   CreateTransactions(records) {
@@ -32,15 +29,13 @@ class DIDTransaction {
 
     let transactions = []
     records.forEach((record) => {
-      let sourceDid = _genDIDAddress(record.sourceVerKey)
-      let destDid = _genDIDAddress(record.destVerKey)
       const payload = {
-        sourceDid: sourceDid,
+        sourceDid: record.sourceDid,
         sourceVerKey: record.sourceVerKey,
-        destDid: destDid,
+        destDid: record.destDid,
         destVerKey: record.destVerKey,
         nonce: record.nonce,
-        signature: this.issuer.sign(Buffer.from(record.nonce)),
+        signature: record.signature,
         role: record.role
       }
 
@@ -98,8 +93,12 @@ class DIDTransaction {
       body: batchListBytes,
       headers: { 'Content-Type': 'application/octet-stream' }
     }, (err, response) => {
-      if (err) return console.log(err)
+      if (err) {
+        console.log(err)
+        throw err
+      } 
       console.log(response.body)
+      return response.body
     })
   }
 }

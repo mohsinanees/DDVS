@@ -3,12 +3,13 @@
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')
 const cbor = require('cbor')
+const { createHash } = require('crypto')
 
 class SchemaPayload {
-    constructor(sourceDid, sourceVerKey, schemaID, version, title, nonce, signature, attributes) {
+    constructor(sourceDid, sourceVerKey, version, title, nonce, signature, attributes) {
         this.sourceDid = sourceDid
         this.sourceVerKey = sourceVerKey
-        this.schemaID = schemaID
+        this.schemaID = createHash('sha256').update(JSON.stringify(attributes)).digest('hex')
         this.version = version
         this.title = title
         this.nonce = nonce
@@ -29,9 +30,9 @@ class SchemaPayload {
                 throw new InvalidTransaction('SourceVerKey is required')
             }
 
-            if (!res.schemaID) {
-                throw new InvalidTransaction('schemaID is required')
-            }
+            // if (!res.schemaID) {
+            //     throw new InvalidTransaction('schemaID is required')
+            // }
 
             if (!res.version) {
                 throw new InvalidTransaction('version is required')
@@ -53,7 +54,7 @@ class SchemaPayload {
                 throw new InvalidTransaction('attributes is required')
             }
 
-            return new SchemaPayload(res.sourceDid, res.sourceVerKey, res.schemaID, res.version, 
+            return new SchemaPayload(res.sourceDid, res.sourceVerKey, res.version, 
                 res.title, res.nonce, res.signature, res.attributes)
         } else {
             throw new InvalidTransaction('Invalid payload serialization').catch(err => {console.log(err)})

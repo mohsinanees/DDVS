@@ -32,10 +32,11 @@ class DIDHandler extends TransactionHandler {
     let actionPromise
 
     if (payload.role != "authorizer" && payload.role != "issuer") {
-      // if (IssuerAddress != '9f39ae037331e609d763219dd0b67863d021668ee585fd6663efa9ed621909f1f58ae3') {
+      
       let res = await context.getState([issuerAddress, requesterAddress])
       // console.log(res)
-      let issuerStatus = issuerVerify(res, issuerAddress, payload)
+      let issuerStatus = issuerVerify(res, issuerAddress, payload.sourceDid, payload.sourceVerKey,
+        payload.signature, payload.nonce)
       if (issuerStatus) {
         let requesterStatus = requesterExist(res, requesterAddress)
         if (requesterStatus) {
