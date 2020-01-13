@@ -8,9 +8,9 @@ const CredClaimPayload = require("./CredClaimPayload")
 const { TransactionHandler } = require('sawtooth-sdk/processor/handler')
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')
 const {
-    Request_family,
+    request_family,
     version,
-    Request_namespace,
+    request_namespace,
     _genRequestAddress
 } = require('./namespace')
 const {
@@ -18,20 +18,15 @@ const {
     authorization_request,
     cred_claim_request
 } = require("../config").request_type
+const { setEntry } = require("../verify")
 var count = 0
 
-const _setEntry = (context, address, stateValue) => {
-    let entries = {
-        [address]: cbor.encode(stateValue)
-    }
-    return context.setState(entries)
-}
 
 class RequestHandler extends TransactionHandler {
     constructor() {
         console.info(('[' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') +
             ' INFO\tRequest_processor]').green)
-        super(Request_family, [version], [Request_namespace])
+        super(request_family, [version], [request_namespace])
     }
 
     async apply(transactionProcessRequest, context) {
@@ -53,7 +48,7 @@ class RequestHandler extends TransactionHandler {
         if (state[requestAddress].length != 0) {
             throw new InvalidTransaction("Request already exists")
         } else {
-            actionPromise = _setEntry(context, requestAddress, payload)
+            actionPromise = setEntry(context, requestAddress, payload)
             if (actionPromise) {
                 if (count == 0) {
                     logger(payload)
@@ -83,12 +78,8 @@ const logger = (message, type) => {
         console.log(
             `schemaID: ${message.schemaID} \n` +
             `credentialID: ${message.credentialID}\n` +
-            `credTitle: ${message.credTitle}\n` +
-            `credBody: ${message.credBody} \n`
-        )
-    } else if (type == cred_claim_request) {
-        console.log(
-            `schemaID: ${message.schemaID} \n`
+            `credTitle: ${message.credentialTitle}\n` +
+            `credBody: ${message.credentialBody} \n`
         )
     }
 }

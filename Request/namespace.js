@@ -1,16 +1,16 @@
 
 const { createHash } = require('crypto')
 
-const Request_family = 'request'
+const request_family = 'request'
 const version = '0.8.1'
 const _hash = (x) =>
   createHash('sha512').update(x).digest('hex').toLowerCase().substring(0, 64)
 
-const Request_namespace = _hash(Request_family).substring(20, 26)
+const request_namespace = _hash(request_family).substring(20, 26)
 
-const _genRequestAddress = (x) => Request_namespace + _hash(x)
+const _genRequestAddress = (x) => request_namespace + _hash(x)
 
-module.exports = { Request_family, 
+module.exports = { request_family, 
                    version, 
-                   Request_namespace,
+                   request_namespace,
                    _genRequestAddress };

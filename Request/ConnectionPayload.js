@@ -3,11 +3,14 @@
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')
 const cbor = require('cbor')
+const { createHash } = require('crypto')
 
 class ConnectionPayload {
-    constructor( type, requestID, sourceDid, sourceVerKey, destDid, destVerKey, nonce, signature) {
+    constructor( type, sourceDid, sourceVerKey, destDid, destVerKey, 
+        nonce, signature) {
         this.type = type
-        this.requestID = requestID
+        this.requestID = createHash("sha256").update(JSON.stringify([type, sourceDid,
+        destDid])).digest('hex')
         this.sourceDid = sourceDid
         this.sourceVerKey = sourceVerKey
         this.destDid = destDid
@@ -25,9 +28,9 @@ class ConnectionPayload {
                 throw new InvalidTransaction('Request Type is required')
             }
 
-            if (!res.requestID) {
-                throw new InvalidTransaction('Request ID is required')
-            }
+            // if (!res.requestID) {
+            //     throw new InvalidTransaction('Request ID is required')
+            // }
             
             if (!res.sourceDid) {
                 throw new InvalidTransaction('SourceDid is required')
@@ -53,11 +56,7 @@ class ConnectionPayload {
                 throw new InvalidTransaction('Signature is required')
             }
 
-            // if (!res.role) {
-            //     throw new InvalidTransaction('Role is required')
-            // }
-
-            return new ConnectionPayload(res.type, res.requestID,  res.sourceDid, res.sourceVerKey,
+            return new ConnectionPayload(res.type, res.sourceDid, res.sourceVerKey,
                  res.destDid, res.destVerKey, res.nonce, res.signature)
         } else {
             throw new InvalidTransaction('Invalid payload serialization').catch(err => {console.log(err)})

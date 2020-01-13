@@ -3,21 +3,25 @@
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')
 const cbor = require('cbor')
+const { createHash } = require('crypto')
 
 class CredAuthorizationPayload {
-    constructor( type, requestID, sourceDid, sourceVerKey, destDid, destVerKey, schemaID,
-                 credentialID, credTitle, credBody, nonce ) {
+    constructor( type, sourceDid, sourceVerKey, destDid, destVerKey, schemaID,
+                 credentialTitle, credentialBody, nonce, signature ) {
         this.type = type
-        this.requestID = requestID
+        this.requestID = createHash("sha256").update(JSON.stringify([type, sourceDid,
+            destDid])).digest('hex')
         this.sourceDid = sourceDid
         this.sourceVerKey = sourceVerKey
         this.destDid = destDid
         this.destVerKey = destVerKey
         this.schemaID = schemaID
-        this.credentialID = credentialID
-        this.credTitle= credTitle
-        this.credBody = credBody
+        this.credentialID = createHash('sha256').update(JSON.stringify([credentialBody.student_name,
+            credentialBody.student_cnic, credentialBody.level])).digest("hex")
+        this.credentialTitle= credentialTitle
+        this.credentialBody = credentialBody
         this.nonce = nonce
+        this.signature = signature
     }
 
     static async fromBytes(payload) {
@@ -29,9 +33,9 @@ class CredAuthorizationPayload {
                 throw new InvalidTransaction('Request Type is required')
             }
 
-            if (!res.requestID) {
-                throw new InvalidTransaction('Request ID is required')
-            }
+            // if (!res.requestID) {
+            //     throw new InvalidTransaction('Request ID is required')
+            // }
             
             if (!res.sourceDid) {
                 throw new InvalidTransaction('SourceDid is required')
@@ -53,15 +57,15 @@ class CredAuthorizationPayload {
                 throw new InvalidTransaction('Schema ID is required')
             }
 
-            if (!res.credentialID) {
-                throw new InvalidTransaction('Credential ID is required')
-            }
+            // if (!res.credentialID) {
+            //     throw new InvalidTransaction('Credential ID is required')
+            // }
 
-            if (!res.credTitle) {
+            if (!res.credentialTitle) {
                 throw new InvalidTransaction('Credential title is required')
             }
 
-            if (!res.credBody) {
+            if (!res.credentialBody) {
                 throw new InvalidTransaction('Credential body is required')
             }
 
@@ -69,9 +73,13 @@ class CredAuthorizationPayload {
                 throw new InvalidTransaction('Schema Version is required')
             }
 
-            return new CredAuthorizationPayload(res.type, res.requestID,  res.sourceDid, res.sourceVerKey,
-                 res.destDid, res.destVerKey, res.schemaID, res.credentialID, res.credentialtitle, res.credentialBody,
-                 res.nonce )
+            if (!res.signature) {
+                throw new InvalidTransaction('signature is required')
+            }
+
+            return new CredAuthorizationPayload(res.type, res.sourceDid, res.sourceVerKey,
+                 res.destDid, res.destVerKey, res.schemaID, res.credentialtitle, 
+                 res.credentialBody, res.nonce, res.signature)
         } else {
             throw new InvalidTransaction('Invalid payload serialization').catch(err => {console.log(err)})
         }

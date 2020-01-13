@@ -10,9 +10,13 @@
   "author": "mohsinanees",
   "license": "",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cbor": "^3.0.0",
     "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "decode-uri-component": "^0.2.0",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "nodemon": "^2.0.2",
     "request": "^2.88.0",
     "sawtooth-sdk": "file:../../../"

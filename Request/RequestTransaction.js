@@ -8,9 +8,9 @@ const request = require('request')
 const { Secp256k1PrivateKey } = require('sawtooth-sdk/signing/secp256k1')
 const {BATCH_URL} = require('../config')
 const {
-  Request_family,
+  request_family,
   version,
-  Request_namespace,
+  request_namespace,
   _genRequestAddress
 } = require('./namespace')
 const { DID_NAMESPACE, _genDIDAddress } = require("../DID/namespace")
@@ -32,28 +32,15 @@ class RequestTransaction {
 
     let transactions = []
     records.forEach((record) => {
-      let sourceDid = _genDIDAddress(record.sourceVerKey)
-      let destDid = _genDIDAddress(record.destVerKey)
-      const payload = {
-        type: record.type,
-        requestID: createHash("sha256").update(JSON.stringify(record.type, record.sourceDid, 
-          record.destDid)).digest("hex"),
-        sourceDid: sourceDid,
-        sourceVerKey: record.sourceVerKey,
-        destDid: destDid,
-        destVerKey: record.destVerKey,
-        nonce: record.nonce,
-        signature: this.requester.sign(record.nonce)
-      }
-
-      let address = _genRequestAddress(payload.requestID)
+      const payload = record
+      // let address = _genRequestAddress(payload.requestID)
       const payloadBytes = cbor.encode(payload)
 
       const transactionHeaderBytes = protobuf.TransactionHeader.encode({
-        familyName: Request_family,
+        familyName: request_family,
         familyVersion: version,
-        inputs: [Request_namespace],
-        outputs: [Request_namespace],
+        inputs: [DID_NAMESPACE, request_namespace],
+        outputs: [request_namespace],
         signerPublicKey: signerPubKey,
         nonce: new Date().getTime().toString(),
         batcherPublicKey: signerPubKey,
@@ -102,8 +89,12 @@ class RequestTransaction {
       body: batchListBytes,
       headers: { 'Content-Type': 'application/octet-stream' }
     }, (err, response) => {
-      if (err) return console.log(err)
+      if (err) {
+        console.log(err)
+        throw err
+      } 
       console.log(response.body)
+      return response.body
     })
   }
 }
