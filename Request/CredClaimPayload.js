@@ -9,8 +9,8 @@ class CredClaimPayload {
     constructor( type, sourceDid, sourceVerKey, destDid, destVerKey, 
         nonce, signature) {
         this.type = type
-        this.requestID = createHash("sha256").update(JSON.stringify([this.type, this.sourceDid,
-            this.destDid])).digest('hex')
+        this.requestID = createHash("sha256").update(JSON.stringify([type, sourceDid,
+            destDid])).digest('hex')
         this.sourceDid = sourceDid
         this.sourceVerKey = sourceVerKey
         this.destDid = destDid

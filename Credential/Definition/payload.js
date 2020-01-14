@@ -3,10 +3,11 @@
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')
 const cbor = require('cbor')
+const { createHash } = require('crypto')
 
 class CredentialPayload {
     constructor(authorizerDid, authorizerVerKey, sourceDid, sourceVerKey, destDid, destVerKey, 
-        schemaID, schemaVersion, credentialID, credentialTitle, nonce, issuerSignature, 
+        schemaID, schemaVersion, credentialTitle, nonce, issuerSignature, 
         authorizerSignature, credentialBody) {
         this.authorizerDid = authorizerDid
         this.authorizerVerKey = authorizerVerKey
@@ -16,7 +17,8 @@ class CredentialPayload {
         this.destVerKey = destVerKey
         this.schemaID = schemaID
         this.schemaVersion = schemaVersion
-        this.credentialID = credentialID
+        this.credentialID = createHash('sha256').update(JSON.stringify([credentialBody.student_name,
+            credentialBody.student_cnic, credentialBody.level])).digest("hex")
         this.credentialTitle = credentialTitle
         this.nonce = nonce
         this.issuerSignature = issuerSignature
@@ -61,9 +63,9 @@ class CredentialPayload {
                 throw new InvalidTransaction('Schema version is required')
             }
 
-            if (!res.credentialID) {
-                throw new InvalidTransaction('credentialID is required')
-            }
+            // if (!res.credentialID) {
+            //     throw new InvalidTransaction('credentialID is required')
+            // }
 
             if (!res.credentialTitle) {
                 throw new InvalidTransaction('credentialTitle is required')
@@ -87,8 +89,8 @@ class CredentialPayload {
 
             return new CredentialPayload(res.authorizerDid, res.authorizerVerKey, res.sourceDid, 
                 res.sourceVerKey, res.destDid, res.destVerKey, res.schemaID, res.schemaVersion, 
-                res.credentialID, res.credentialTitle, res.nonce, res.issuerSignature, 
-                res.authorizerSignature, res.credentialBody)
+                res.credentialTitle, res.nonce, res.issuerSignature, res.authorizerSignature, 
+                res.credentialBody)
         } else {
             throw new InvalidTransaction('Invalid payload serialization').catch(err => { console.log(err) })
         }

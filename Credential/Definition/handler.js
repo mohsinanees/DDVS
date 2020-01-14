@@ -47,35 +47,36 @@ class CredentialHandler extends TransactionHandler {
     // get state value of all the entities and schema
     let result = await context.getState([authorizerAddress, issuerAddress,
       schemaAddress, requesterAddress, credentialAddress])
+    console.log(result)  
 
     // verify authorizer, issuer, requester, schema 
-    let authorizerStatus = authorizerVerify(result, authorizerAddress, payload.authorizerDid,
-      payload.authorizerVerKey, payload.authorizerSignature, payload.nonce)
-    if (authorizerStatus) {
-      let issuerStatus = issuerVerify(result, issuerAddress, payload.sourceDid, payload.sourceVerKey,
-        payload.issuerSignature, payload.nonce)
-      if (issuerStatus) {
-        let schemaStatus = schemaVerify(result, schemaAddress, payload.authorizerDid, payload.authorizerVerKey,
-          payload.authorizerSignature, payload.nonce)
-        if (schemaStatus) {
-          let requesterStatus = requesterExist(result, requesterAddress)
-          if (requesterStatus) {
+    // let authorizerStatus = authorizerVerify(result, authorizerAddress, payload.authorizerDid,
+    //   payload.authorizerVerKey, payload.authorizerSignature, payload.nonce)
+    // if (authorizerStatus) {
+    //   let issuerStatus = issuerVerify(result, issuerAddress, payload.sourceDid, payload.sourceVerKey,
+    //     payload.issuerSignature, payload.nonce)
+    //   if (issuerStatus) {
+    //     let schemaStatus = schemaVerify(result, schemaAddress, payload.authorizerDid, payload.authorizerVerKey,
+    //       payload.authorizerSignature, payload.nonce)
+    //     if (schemaStatus) {
+    //       let requesterStatus = requesterExist(result, requesterAddress)
+    //       if (requesterStatus) {
             let credentialStatus = credentialExist(result, credentialAddress)
             if (credentialStatus) {
               throw new InvalidTransaction("Credential already exist")
             }
-          } else {
-            throw new InvalidTransaction("Invalid Requester")
-          }
-        } else {
-          throw new InvalidTransaction("Invalid Schema")
-        }
-      } else {
-        throw new InvalidTransaction("Invalid Issuer")
-      }
-    } else {
-      throw new InvalidTransaction("Invalid Authorizer")
-    }
+    //       } else {
+    //         throw new InvalidTransaction("Invalid Requester")
+    //       }
+    //     } else {
+    //       throw new InvalidTransaction("Invalid Schema")
+    //     }
+    //   } else {
+    //     throw new InvalidTransaction("Invalid Issuer")
+    //   }
+    // } else {
+    //   throw new InvalidTransaction("Invalid Authorizer")
+    // }
 
     // writing state value of credential
     let actionPromise = setEntry(context, credentialAddress, payload)

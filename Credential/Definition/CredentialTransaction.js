@@ -17,14 +17,11 @@ const { DID_NAMESPACE, _genDIDAddress } = require("../../DID/namespace")
 const { schema_namespace } = require("../Schema/namespace")
 
 class CredentialTransaction {
-  constructor(privateKeyHex, issuerPrivateKey) {
+  constructor(privateKeyHex) {
     this.context = createContext('secp256k1')
     this.privateKey = Secp256k1PrivateKey.fromHex(privateKeyHex)
     let signer = new CryptoFactory(this.context)
     this.signer = signer.newSigner(this.privateKey)
-    this.issuerPrivateKey = Secp256k1PrivateKey.fromHex(issuerPrivateKey)
-    let issuer = new CryptoFactory(this.context)
-    this.issuer = issuer.newSigner(this.issuerPrivateKey)
   }
 
   CreateTransactions(records) {
@@ -33,31 +30,9 @@ class CredentialTransaction {
 
     let transactions = []
     records.forEach((record) => {
-      let authorizerDid = _genDIDAddress(record.authorizerVerKey)
-      let sourceDid = _genDIDAddress(record.sourceVerKey)
-      let destDid = _genDIDAddress(record.destVerKey)
-      let nonce = createHash('sha256').update(JSON.stringify(record.credentialBody)).digest('hex')
-      const payload = {
-        authorizerDid: authorizerDid,
-        authorizerVerKey: record.authorizerVerKey,
-        sourceDid: sourceDid,
-        sourceVerKey: record.sourceVerKey,
-        destDid: destDid,
-        destVerKey: record.destVerKey,
-        schemaID: record.schemaID,
-        schemaVersion: record.schemaVersion,
-        credentialID: createHash('sha256').update(JSON.stringify([record.credentialBody.student_name,
-          record.credentialBody.student_cnic, record.credentialBody.level])).digest("hex"),
-        credentialTitle: record.credentialTitle,
-        nonce: nonce,
-        issuerSignature: this.issuer.sign(Buffer.from(nonce)),
-        authorizerSignature: signer.sign(Buffer.from(nonce)),
-        credentialBody: record.credentialBody
-      }
-      
-      let address = _genCredentialAddress(payload.credentialID)
-      const payloadBytes = cbor.encode(payload)
 
+      const payload = record
+      const payloadBytes = cbor.encode(payload)
       const transactionHeaderBytes = protobuf.TransactionHeader.encode({
         familyName: credDef_family,
         familyVersion: version,

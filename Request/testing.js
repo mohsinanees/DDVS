@@ -19,20 +19,50 @@
 // console.log(signer)
 // // let status = signer.verify(sig, msg, PubKey)
 // console.log(status)
-
+const express = require("express")
+const cors = require("cors");
+const BodyParser = require('body-parser');
+const app = express();
+const PORT = 5000
+app.options('*', cors());
+app.use(cors());
+app.use(BodyParser.json({ limit: `50mb` }))
 const axios = require("axios")
-let res = axios.post('http://192.168.1.145:7000/request/connection/',
+
+app.post("/proxy/connection", async (req, res) => {
+    let data = req.body
+    // console.log(data)
+    let result = await axios.post('http://192.168.1.145:7000/request/connection/',
             {
                 header: {'Content-Type': 'application/json'},
-                body: {
-                    type: "connection",
-                    sourceDid : "9f39aed951f0f754448844e5b8910b6121df63cf4d560239041b881c177219a6ba39d3",
-                    sourceVerKey : "5234532452354",
-                    destDid : "9f39ae9c138db820b625d80316c19cd9a0c9c1bbfe256958844ac3dcc4106997b1d275",
-                    destVerKey: "02a8e1062dd00b03fde4ac8ab2c60c9c29a93ce2f4de23d273d702be830737f4f4",
-                    signature: "653982764593284652938",
-                    nonce: "53926487"
-                }
+                body: data
             }
         )
-console.log(res)        
+    console.log(result.data)
+    if(result.data.status) {
+        res.status(200).send(result.data)
+    } else {
+        res.status(402).send("connection failed")
+    }  
+})      
+
+app.get("/proxy/credential", async (req, res) => {
+    let params = req.query
+    // console.log(data)
+    let result = await axios.get('http://192.168.1.145:7000/request/credential/',
+            {
+                header: {'Content-Type': 'application/json'},
+                params: params
+            }
+        )
+    console.log(result.data)
+    if(result.data) {
+        res.status(200).send(result.data)
+    } else {
+        res.status(402).send("credential does not exist")
+    }  
+})
+
+app.listen(PORT, () => {
+    console.log(`server running on port ${PORT}`)
+});

@@ -72,14 +72,14 @@ const logger = (message, type) => {
         `SourceVerKey: ${message.sourceVerKey}\n` +
         `DestDid: ${message.destDid}\n` +
         `DestVerKey: ${message.destVerKey}\n` +
-        `nonce: ${message.nonce}\n`
+        `nonce: ${message.nonce}`
     )
     if (type == authorization_request) {
         console.log(
             `schemaID: ${message.schemaID} \n` +
             `credentialID: ${message.credentialID}\n` +
             `credTitle: ${message.credentialTitle}\n` +
-            `credBody: ${message.credentialBody} \n`
+            `credBody: ${JSON.stringify(message.credentialBody)} \n`
         )
     }
 }
