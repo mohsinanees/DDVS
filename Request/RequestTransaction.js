@@ -1,5 +1,13 @@
-
-
+/*                                                                                     *  
+    --------------------------------------------------------------------------------- 
+   | * This is the Transaction Creation and Sending Module for all the Request Types.|
+   | * Here we provide functions that manage creation and submission of Transactions.|
+   | * Private key is used to sign the Transactions.                                 |  
+   | * Transactions are created in the form of Batches and Batches are submitted     |
+   |   to Blockchain.                                                                |   
+    --------------------------------------------------------------------------------- 
+*                                                                                     */ 
+'use strict'
 const { createContext, CryptoFactory } = require('sawtooth-sdk/signing')
 const { createHash } = require('crypto')
 const { protobuf } = require('sawtooth-sdk')

@@ -1,4 +1,13 @@
-
+/*                                                                                           *  
+    --------------------------------------------------------------------------------------- 
+   | * This is the Transaction Structure Definition for Credential Transactions.           |
+   |   and connection.                                                                     | 
+   | * Here we define the methods to Define the credential for any individual who is part  |
+   |   of the network.                                                                     | 
+   | * Every participant must own a registered DID on Network to be able to issue, claim   | 
+   |   or authorize any credential.                                                        | 
+    ---------------------------------------------------------------------------------------  
+*                                                                                            */ 
 'use strict'
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')

@@ -1,4 +1,9 @@
-
+/*                                                                    *  
+    ---------------------------------------------------------------
+   | * This is the main configuration for whole Project.           |
+   | * Here we deine all the Global Variables for All the modules. |  
+    ---------------------------------------------------------------
+*                                                                     */ 
 module.exports = {
     DEBUG: "DEBUG",
     WARN: "WARN",

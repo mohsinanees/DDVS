@@ -1,4 +1,9 @@
-
+/*                                                                                       *  
+    ----------------------------------------------------------------------------------- 
+   | * This is the namespace Module for all the Request Types.                         |
+   | * Here we define the procedure of generating state addresses for all the entities.|           |  
+    -----------------------------------------------------------------------------------
+*                                                                                       */ 
 const { createHash } = require('crypto')
 
 const request_family = 'request'

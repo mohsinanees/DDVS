@@ -1,4 +1,11 @@
-
+/*                                                                                 *  
+    ----------------------------------------------------------------------------- 
+   | * This is the Transaction Verification Module for all the DID Transactions. |
+   | * All the checks are implemented in 'apply' method of Handler class.        |
+   | * Here we use Global Verification Methods defined in "verify.js" to verify  |
+   |   the Schema Generator .                                                    |  
+    ----------------------------------------------------------------------------- 
+*                                                                                  */ 
 'use strict'
 const cbor = require('cbor')
 var colors = require('colors')

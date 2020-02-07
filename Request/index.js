@@ -1,4 +1,8 @@
-
+/*                                                                                    *  
+    ------------------------------------------------------------------------------- 
+   | This is the bridge Module that registers Transaction Family to the Validator. | 
+    ------------------------------------------------------------------------------- 
+*                                                                                     */
 'use strict'
 
 const { TransactionProcessor } = require('sawtooth-sdk/processor')

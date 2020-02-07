@@ -1,4 +1,13 @@
-
+/*                                                                                           *  
+    --------------------------------------------------------------------------------------- 
+   | * This is the Transaction Structure Definition for DID Transactions both Registration |
+   |   and connection.                                                                     | 
+   | * DID is the main component of DCACVS as it is the part of every Transaction.         | 
+   | * Every participant must own a registered DID on Network to be able to issue, claim   | 
+   |   or authorize any credential.                                                        | 
+   | * It replicates the Self Sovereign Identity of any individual Globally                | 
+    ---------------------------------------------------------------------------------------  
+*                                                                                            */ 
 'use strict'
 
 const { InvalidTransaction } = require('sawtooth-sdk/processor/exceptions')

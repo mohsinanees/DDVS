@@ -1,4 +1,11 @@
-
+/*                                                                                 *  
+    ----------------------------------------------------------------------------- 
+   | * This is the Transaction Verification Module for all the DID Transactions. |
+   | * All the checks are implemented in 'apply' method of Handler class.        |
+   | * Here we use Global Verification Methods defined in "verify.js" to verify  |
+   |   the Isuuer and Requester of DID.                                          |  
+    ----------------------------------------------------------------------------- 
+*                                                                                  */ 
 'use strict'
 var colors = require('colors')
 const DIDPayload = require('./payload')

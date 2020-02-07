@@ -1,3 +1,10 @@
+/*                                                                                *  
+    ----------------------------------------------------------------------------
+   | * This is the Global Api for Verification methods used in all Transactions.|
+   | * Here We define Global Functions to verify all the entities in DACVS i.e. | 
+   |   "Issuer", "Authorizer", "Claimer".                                       |  
+    ----------------------------------------------------------------------------
+*                                                                                 */ 
 const cbor = require('cbor')
 var colors = require('colors')
 const { Secp256k1Context, Secp256k1PublicKey } = require('sawtooth-sdk/signing/secp256k1')

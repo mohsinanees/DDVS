@@ -1,3 +1,10 @@
+/*                                                                                      *  
+    ---------------------------------------------------------------------------------- 
+   | * This is the main application for demo of whole Project.                        |
+   | * It uses all of the modules and Transaction Families to demonstrate the working | 
+   |   of "Decentralized Academic Credentials Verification System".                   |  
+    ----------------------------------------------------------------------------------
+*                                                                                       */ 
 const express = require('express');
 const cors = require("cors");
 const fs = require('fs')
@@ -6,10 +13,10 @@ const { createContext, CryptoFactory } = require('sawtooth-sdk/signing')
 const { Secp256k1PrivateKey } = require('sawtooth-sdk/signing/secp256k1')
 const { createHash } = require('crypto')
 const BodyParser = require('body-parser');
-const {submitRequest, submitAuthorizationRequest} = require("./client")
-const submitDid = require("../DID/client")
-const submitSchema = require("../Credential/Schema/client")
-const submitCredential = require("../Credential/Definition/client")
+const {submitRequest, submitAuthorizationRequest} = require("./Request/client")
+const submitDid = require("./DID/client")
+const submitSchema = require("./Credential/Schema/client")
+const submitCredential = require("./Credential/Definition/client")
 const authorizerPrivateKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
 const authorizerVerKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.pub`, 'utf8')
 const issuerPrivateKey = fs.readFileSync(`/home/mohsin/Documents/issuer.priv`, 'utf8')

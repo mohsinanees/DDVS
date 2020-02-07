@@ -1,4 +1,9 @@
-
+/*                                                                                    *  
+    -------------------------------------------------------------------------------- 
+   | * This is the client application for all the Request Types which initiates the |
+   |   processing.                                                                  |           |  
+    --------------------------------------------------------------------------------
+*                                                                                     */ 
 const RequestTransaction = require('./RequestTransaction')
 const fs = require('fs')
 const USER = require("os").userInfo().username

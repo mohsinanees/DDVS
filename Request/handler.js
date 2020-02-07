@@ -1,4 +1,10 @@
-
+/*                                                                               *  
+    -------------------------------------------------------------------------- 
+   | * This is the Transaction Verification Module for all the Request Types. |
+   | * All the checks are implemented in 'apply' method of Handler class.     |
+   | * Main check is that if request being processed, already exists or not.  |  
+    -------------------------------------------------------------------------- 
+*                                                                                */ 
 'use strict'
 const cbor = require('cbor')
 var colors = require('colors')
