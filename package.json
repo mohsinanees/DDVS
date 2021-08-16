@@ -10,11 +10,12 @@
   "author": "mohsinanees",
   "license": "",
   "dependencies": {
+    "axios": "^0.19.1",
     "cbor": "^3.0.0",
     "colors": "^1.4.0",
     "dotenv": "^8.2.0",
     "nodemon": "^2.0.2",
     "request": "^2.88.0",
-    "sawtooth-sdk": "file:../../"
+    "sawtooth-sdk": "file:/home/mohsin/Desktop/sawtooth-sdk-javascript-main"
   }
 }

@@ -5,7 +5,6 @@ const { createHash } = require('crypto')
 const { protobuf } = require('sawtooth-sdk')
 const cbor = require('cbor')
 const request = require('request')
-const SQL = require('./sql')
 const fs = require('fs')
 const { Secp256k1PrivateKey } = require('sawtooth-sdk/signing/secp256k1')
 const USER = require("os").userInfo().username
@@ -132,10 +131,8 @@ let Certificate = {
   passingDate : "17-09-2015"
 }
 
-function start(offset) {
-  const sql = new SQL()
+function start() {
   const client = new DDVSClient(privateKeyHex)
-  //sql.readRecords(10, offset).then((res) => {
     const records = [Certificate]
     const transactions = client.CreateTransactions(records, sql)
     const batch = client.CreateBatch(transactions)
@@ -146,7 +143,7 @@ function start(offset) {
   // })
 }
 
-start(offset = 0)
+start()
 //schedule.scheduleJob('3 * * * *', start(offset = 0));
 
 
