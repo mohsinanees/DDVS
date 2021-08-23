@@ -36,31 +36,31 @@ class RequestHandler extends TransactionHandler {
     }
 
     async apply(transactionProcessRequest, context) {
-        let encPayload = transactionProcessRequest.payload
-        let decodedData = await cbor.decode(transactionProcessRequest.payload)
-        let payload
+        let encPayload = transactionProcessRequest.payload;
+        let decodedData = await cbor.decode(transactionProcessRequest.payload);
+        let payload;
         if (decodedData.type == conection_request) {
-            payload = await ConnectionPayload.fromBytes(encPayload)
+            payload = await ConnectionPayload.fromBytes(encPayload);
         } else if (decodedData.type == authorization_request) {
-            payload = await CredAuthorizationPayload.fromBytes(encPayload)
+            payload = await CredAuthorizationPayload.fromBytes(encPayload);
         } else if (decodedData.type == cred_claim_request) {
-            payload = await CredClaimPayload.fromBytes(encPayload)
+            payload = await CredClaimPayload.fromBytes(encPayload);
         } else {
-            throw new InvalidTransaction("Unknown Request Type")
+            throw new InvalidTransaction("Unknown Request Type");
         }
-        let requestAddress = _genRequestAddress(payload.requestID)
-        let actionPromise
-        let state = await context.getState([requestAddress])
+        let requestAddress = _genRequestAddress(payload.requestID);
+        let actionPromise;
+        let state = await context.getState([requestAddress]);
         if (state[requestAddress].length != 0) {
-            throw new InvalidTransaction("Request already exists")
+            throw new InvalidTransaction("Request already exists");
         } else {
-            actionPromise = setEntry(context, requestAddress, payload)
+            actionPromise = setEntry(context, requestAddress, payload);
             if (actionPromise) {
                 if (count == 0) {
-                    logger(payload)
-                    count++
+                    logger(payload);
+                    count++;
                 } else {
-                    count = 0
+                    count = 0;
                 }
             }
         }

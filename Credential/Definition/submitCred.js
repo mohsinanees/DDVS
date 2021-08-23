@@ -1,8 +1,5 @@
 
-const CredentialTransaction = require('./CredentialTransaction')
-const fs = require('fs')
-const USER = require("os").userInfo().username
-const privateKeyHex = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
+const CredentialTransaction = require('./CredentialTransaction');
 
 // let record = {
 //   authorizerVerKey: authorPubKey,
@@ -24,7 +21,7 @@ const privateKeyHex = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv
 //   }
 // }
 
-function submitCredential(authorizerDid, authorizerVerKey, sourceDid, sourceVerKey, destDid, 
+function submitCredential(authorizerPrivateKeyHex, authorizerDid, authorizerVerKey, sourceDid, sourceVerKey, destDid, 
   destVerKey, schemaID, schemaVersion, credentialTitle, nonce, issuerSignature, 
   authorizerSignature, credentialBody) {
     let record = {
@@ -42,7 +39,7 @@ function submitCredential(authorizerDid, authorizerVerKey, sourceDid, sourceVerK
       authorizerSignature: authorizerSignature,
       credentialBody: credentialBody
     }
-    const client = new CredentialTransaction(privateKeyHex)
+    const client = new CredentialTransaction(authorizerPrivateKeyHex)
     const records = [record]
     const transactions = client.CreateTransactions(records)
     const batch = client.CreateBatch(transactions)

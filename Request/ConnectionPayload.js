@@ -14,15 +14,15 @@ const { createHash } = require('crypto')
 class ConnectionPayload {
     constructor( type, sourceDid, sourceVerKey, destDid, destVerKey, 
         nonce, signature) {
-        this.type = type
+        this.type = type;
         this.requestID = createHash("sha256").update(JSON.stringify([type, sourceDid,
-        destDid])).digest('hex')
-        this.sourceDid = sourceDid
-        this.sourceVerKey = sourceVerKey
-        this.destDid = destDid
-        this.destVerKey = destVerKey
-        this.nonce = nonce
-        this.signature = signature
+        destDid])).digest('hex');
+        this.sourceDid = sourceDid;
+        this.sourceVerKey = sourceVerKey;
+        this.destDid = destDid;
+        this.destVerKey = destVerKey;
+        this.nonce = nonce;
+        this.signature = signature;
     }
 
     static async fromBytes(payload) {

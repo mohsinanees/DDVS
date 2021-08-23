@@ -36,27 +36,27 @@ class SchemaHandler extends TransactionHandler {
   }
 
   async apply(transactionProcessRequest, context) {
-    let payload = await SchemaPayload.fromBytes(transactionProcessRequest.payload)
-    let header = transactionProcessRequest.header
-    let authorAddress = _genDIDAddress(payload.sourceVerKey)
-    let schemaAddress = _genSchemaAddress(payload.schemaID)
-    let actionPromise
-    let res = await context.getState([authorAddress, schemaAddress])
+    let payload = await SchemaPayload.fromBytes(transactionProcessRequest.payload);
+    let header = transactionProcessRequest.header;
+    let authorAddress = _genDIDAddress(payload.sourceVerKey);
+    let schemaAddress = _genSchemaAddress(payload.schemaID);
+    let actionPromise;
+    let res = await context.getState([authorAddress, schemaAddress]);
 
     let status = authorizerVerify(res, authorAddress, payload.sourceDid, payload.sourceVerKey, 
-      payload.signature, payload.nonce)
+      payload.signature, payload.nonce);
     if (status) {
-      actionPromise = setEntry(context, schemaAddress, payload)
+      actionPromise = setEntry(context, schemaAddress, payload);
       if (actionPromise) {
         if (count == 0) {
-          logger(payload)
-          count++
+          logger(payload);
+          count++;
         } else {
-          count = 0
+          count = 0;
         }
       }
     } else {
-      throw new InvalidTransaction("Invalid Authorizer")
+      throw new InvalidTransaction("Invalid Authorizer");
     }
   }
 }

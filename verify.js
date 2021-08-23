@@ -24,7 +24,7 @@ const setEntry = (context, address, stateValue) => {
 const authorizerVerify = (possibleAddressValues, address, authorizerDid, 
     authorizerVerKey, authorizerSignature, nonce) => {
     let stateValueRep = possibleAddressValues[address]
-    let stateValue
+    let stateValue;
     if (stateValueRep && stateValueRep.length > 0) {
         stateValue = cbor.decodeFirstSync(stateValueRep)
         if (authorizerDid == stateValue.destDid) {

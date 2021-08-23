@@ -16,16 +16,16 @@ const {
 
 
 class DIDTransaction {
-  constructor(privateKeyHex) {
-    this.context = createContext('secp256k1')
-    this.privateKey = Secp256k1PrivateKey.fromHex(privateKeyHex)
-    let signer = new CryptoFactory(this.context)
-    this.signer = signer.newSigner(this.privateKey)
+  constructor(DidSubmitterPrivateKeyHex) {
+    this.context = createContext('secp256k1');
+    this.privateKey = Secp256k1PrivateKey.fromHex(DidSubmitterPrivateKeyHex);
+    let signer = new CryptoFactory(this.context);
+    this.signer = signer.newSigner(this.privateKey);
   }
 
   CreateTransactions(records) {
-    const signer = this.signer
-    const signerPubKey = signer.getPublicKey().asHex()
+    const signer = this.signer;
+    const signerPubKey = signer.getPublicKey().asHex();
 
     let transactions = []
     records.forEach((record) => {
@@ -37,9 +37,9 @@ class DIDTransaction {
         nonce: record.nonce,
         signature: record.signature,
         role: record.role
-      }
+      };
 
-      const payloadBytes = cbor.encode(payload)
+      const payloadBytes = cbor.encode(payload);
       const transactionHeaderBytes = protobuf.TransactionHeader.encode({
         familyName: DID_FAMILY,
         familyVersion: VERSION,
@@ -50,41 +50,41 @@ class DIDTransaction {
         batcherPublicKey: signerPubKey,
         dependencies: [],
         payloadSha512: createHash('sha512').update(payloadBytes).digest('hex')
-      }).finish()
+      }).finish();
 
-      const signature = signer.sign(transactionHeaderBytes)
+      const signature = signer.sign(transactionHeaderBytes);
       const transaction = protobuf.Transaction.create({
         header: transactionHeaderBytes,
         headerSignature: signature,
         payload: payloadBytes
-      })
-      transactions.push(transaction)
+      });
+      transactions.push(transaction);
     })
 
-    return transactions
+    return transactions;
 
   }
 
   CreateBatch(transactions) {
-    const signer = this.signer
+    const signer = this.signer;
     const batchHeaderBytes = protobuf.BatchHeader.encode({
       signerPublicKey: signer.getPublicKey().asHex(),
       transactionIds: transactions.map((txn) => txn.headerSignature),
-    }).finish()
+    }).finish();
 
-    const signature = signer.sign(batchHeaderBytes)
+    const signature = signer.sign(batchHeaderBytes);
 
     const batch = protobuf.Batch.create({
       header: batchHeaderBytes,
       headerSignature: signature,
       transactions: transactions
-    })
+    });
 
     const batchListBytes = protobuf.BatchList.encode({
       batches: [batch]
-    }).finish()
+    }).finish();
 
-    return batchListBytes
+    return batchListBytes;
   }
 
   SubmitBatch(batchListBytes) {
@@ -94,13 +94,13 @@ class DIDTransaction {
       headers: { 'Content-Type': 'application/octet-stream' }
     }, (err, response) => {
       if (err) {
-        console.log(err)
-        throw err
+        console.log(err);
+        throw err;
       } 
-      console.log(response.body)
-      return response.body
-    })
+      console.log(response.body);
+      return response.body;
+    });
   }
 }
 
-module.exports = DIDTransaction
+module.exports = DIDTransaction;

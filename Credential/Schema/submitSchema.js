@@ -1,8 +1,5 @@
 
-const SchemaClient = require('./SchemaTransaction')
-const fs = require('fs')
-const USER = require("os").userInfo().username
-const privateKeyHex = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
+const SchemaTransaction = require('./SchemaTransaction')
 
 // let record = {
 //   sourceVerKey: authorPubKey,
@@ -23,7 +20,7 @@ const privateKeyHex = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv
 //   }
 // }
 
-function submitSchema(sourceDid, sourceVerKey, version, title, nonce, signature, attributes) {
+function submitSchema(authorizerPrivateKeyHex, sourceDid, sourceVerKey, version, title, nonce, signature, attributes) {
   let record = {
     sourceDid: sourceDid,
     sourceVerKey: sourceVerKey,
@@ -32,18 +29,18 @@ function submitSchema(sourceDid, sourceVerKey, version, title, nonce, signature,
     nonce: nonce,
     signature: signature,
     attributes: attributes
-  }
-  const client = new SchemaClient(privateKeyHex)
-  const records = [record]
-  const transactions = client.CreateTransactions(records)
-  const batch = client.CreateBatch(transactions)
+  };
+  const client = new SchemaTransaction(authorizerPrivateKeyHex);
+  const records = [record];
+  const transactions = client.CreateTransactions(records);
+  const batch = client.CreateBatch(transactions);
   try {
-    let status  = client.SubmitBatch(batch)
+    let status  = client.SubmitBatch(batch);
     // console.log(decodeUriComponent(status))
-    return true
+    return true;
   } catch (err) {
-    console.log(err)
-    return false
+    console.log(err);
+    return false;
   }
 }
 
