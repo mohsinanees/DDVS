@@ -16,13 +16,8 @@ const submitDid = require("./DID/submitDID");
 const submitSchema = require("./Credential/Schema/submitSchema");
 const submitCredential = require("./Credential/Definition/submitCred");
 const { _genDIDAddress } = require("./DID/namespace");
-// const authorizerPrivateKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.priv`, 'utf8')
-// const authorizerVerKey = fs.readFileSync(`/home/${USER}/.sawtooth/keys/${USER}.pub`, 'utf8')
-// const issuerPrivateKey = fs.readFileSync(`/home/mohsin/Documents/issuer.priv`, 'utf8')
-// const issuerVerKey = fs.readFileSync(`/home/mohsin/Documents/issuer.pub`, 'utf8')
-// const studentVerKey = fs.readFileSync(`/home/mohsin/Documents/student.pub`, 'utf8')
-// const issuerDid = "9f39ae9c138db820b625d80316c19cd9a0c9c1bbfe256958844ac3dcc4106997b1d275"
-// const authorizerDid = "9f39ae55ee18a54d71031818a40bdf821e18e540d798ba770a66521c7c222caaed37ae"
+const { roles } = require("./config");
+const { error } = require('console');
 
 const app = express();
 const PORT = 7000
@@ -36,28 +31,41 @@ const init = () => {
     let authorizerContext = createContext('secp256k1');
     var authorizerObj = new CryptoFactory(authorizerContext);
     var authorizer = authorizerObj.newSigner(authorizerPrivatekey);
-    var authorizerVerKey = authorizer.getPublicKey();
+    var authorizerVerKey = authorizer.getPublicKey().asHex();
     var authorizerDid = _genDIDAddress(authorizerVerKey);
+    let authorizernonce = createHash('sha256').update(JSON.stringify({ authorizerDid, authorizerVerKey })).digest('hex');
+    let authorizerSignature = authorizer.sign(Buffer.from(authorizernonce));
+    let authorizerDidStatus = submitDid(authorizerPrivatekey.asHex(), authorizerDid, authorizerVerKey,
+        authorizerDid, authorizerVerKey, authorizernonce, authorizerSignature, roles.authorizer);
+    if(!authorizerDidStatus) {
+        throw error;
+    }
 
     // generate issuer
     var issuerPrivateKey = Secp256k1PrivateKey.newRandom();
     let issuerContext = createContext('secp256k1');
     var issuerObj = new CryptoFactory(issuerContext);
     var issuer = issuerObj.newSigner(issuerPrivateKey);
-    var issuerVerKey = issuer.getPublicKey();
+    var issuerVerKey = issuer.getPublicKey().asHex();
     var issuerDid = _genDIDAddress(issuerVerKey);
+    let issuernonce = createHash('sha256').update(JSON.stringify({ issuerDid, issuerVerKey })).digest('hex');
+    let authorizerSignatureForIssuer = authorizer.sign(Buffer.from(issuernonce));
+    let issuerDidStatus = submitDid(authorizerPrivatekey.asHex(), authorizerDid, authorizerVerKey,
+        issuerDid, issuerVerKey, issuernonce, authorizerSignatureForIssuer, roles.issuer);
+    if(!issuerDidStatus) {
+        throw error;
+    }
 
     // generate student
     var studentPrivateKey = Secp256k1PrivateKey.newRandom();
     let studentContext = createContext('secp256k1');
     var studentObj = new CryptoFactory(studentContext);
     var student = studentObj.newSigner(studentPrivateKey);
-    var studentVerKey = student.getPublicKey();
+    var studentVerKey = student.getPublicKey().asHex();
     var studentDid = _genDIDAddress(studentVerKey);
 }
 
 app.post('/request/connection/', async (req, res) => {
-    init();
     console.log(req.body);
     let requestData = req.body;
     let type = requestData.type;
@@ -68,13 +76,13 @@ app.post('/request/connection/', async (req, res) => {
     let nonce = requestData.nonce;
     let requesterSignature = requestData.signature;
     try {
-        let requestStatus = submitRequest(issuerPrivateKey.toHex(), studentPrivateKey.toHex(), type, requesterDid, requesterVerKey, destDid,
+        let requestStatus = submitRequest(issuerPrivateKey.asHex(), studentPrivateKey.asHex(), type, requesterDid, requesterVerKey, destDid,
             destVerKey, nonce, requesterSignature)
         // console.log(requestStatus)    
         if (requestStatus) {
             let issuerSignature = issuer.sign(Buffer.from(nonce));
-            let didStatus = submitDid(issuerPrivateKey.toHex(), issuerDid, issuerVerKey, requesterDid, requesterVerKey,
-                nonce, issuerSignature, "standard");
+            let didStatus = submitDid(issuerPrivateKey.asHex(), issuerDid, issuerVerKey, requesterDid, requesterVerKey,
+                nonce, issuerSignature, roles.standard);
             if (didStatus) {
                 res.status(200).send({
                     status: "OK",
@@ -103,7 +111,7 @@ app.get('/request/credential/', async (req, res) => {
     let nonce = requestData.nonce
     let requesterSignature = requestData.signature
     try {
-        let requestStatus = submitRequest(issuerPrivateKey.toHex(), studentPrivateKey.toHex(), type, requesterDid, requesterVerKey, destDid,
+        let requestStatus = submitRequest(issuerPrivateKey.asHex(), studentPrivateKey.asHex(), type, requesterDid, requesterVerKey, destDid,
             destVerKey, nonce, requesterSignature)
         // console.log(requestStatus)    
         if (requestStatus) {
@@ -122,7 +130,7 @@ app.get('/request/credential/', async (req, res) => {
                 subjectmarks: "subject_marks",
                 passingyear: "passing_year"
             }
-            let schemaStatus = submitSchema(authorizerPrivatekey.toHex(), authorizerDid, authorizerVerKey, schemaVersion, title, nonce,
+            let schemaStatus = submitSchema(authorizerPrivatekey.asHex(), authorizerDid, authorizerVerKey, schemaVersion, title, nonce,
                 authorizerSignature, attributes)
             if (schemaStatus) {
                 let requestType = "authorization"
@@ -141,12 +149,12 @@ app.get('/request/credential/', async (req, res) => {
                 }
                 nonce = createHash('sha256').update(JSON.stringify(credentialBody)).digest('hex')
                 let issuerSignature = issuer.sign(Buffer.from(nonce))
-                requestStatus = submitAuthorizationRequest(authorizerPrivatekey.toHex(), studentPrivateKey.toHex(), requestType, issuerDid, issuerVerKey,
+                requestStatus = submitAuthorizationRequest(authorizerPrivatekey.asHex(), studentPrivateKey.asHex(), requestType, issuerDid, issuerVerKey,
                     requesterDid, requesterVerKey, schemaID, credentialTitle, credentialBody,
                     nonce, issuerSignature);
                 if (requestStatus) {
                     authorizerSignature = authorizer.sign(Buffer.from(nonce))
-                    let credentialStatus = submitCredential(authorizerPrivatekey.toHex(), authorizerDid, authorizerVerKey,
+                    let credentialStatus = submitCredential(authorizerPrivatekey.asHex(), authorizerDid, authorizerVerKey,
                         issuerDid, issuerVerKey, requesterDid, requesterVerKey, schemaID,
                         schemaVersion, credentialTitle, nonce, issuerSignature,
                         authorizerSignature, credentialBody)
@@ -188,5 +196,10 @@ app.get('/request/credential/', async (req, res) => {
 });
 
 app.listen(PORT, () => {
+    try {
+        init();
+    } catch(err) {
+        console.log(err);
+    }
     console.log(`server running on port ${PORT}`)
 });

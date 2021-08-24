@@ -1,7 +1,5 @@
 
 const DIDTransaction = require('./DIDTransaction')
-const fs = require('fs')
-const USER = require("os").userInfo().username
 
 // let record = {
 //   sourceVerKey: issuerPubKey,
@@ -25,8 +23,7 @@ function submitDid(DidSubmitterPrivateKey, sourceDid, sourceVerKey, destDid, des
   const transactions = client.CreateTransactions(records);
   const batch = client.CreateBatch(transactions);
   try {
-    let status  = client.SubmitBatch(batch);
-    // console.log(decodeUriComponent(status))
+    client.SubmitBatch(batch);
     return true;
   } catch (err) {
     console.log(err);
@@ -35,4 +32,4 @@ function submitDid(DidSubmitterPrivateKey, sourceDid, sourceVerKey, destDid, des
 
 }
 
-module.exports = submitDid
+module.exports = submitDid;
