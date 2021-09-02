@@ -1,5 +1,3 @@
-
-
 // const { Secp256k1Context, Secp256k1PublicKey, Secp256k1PrivateKey } = require('sawtooth-sdk/signing/secp256k1')
 // const { createContext, CryptoFactory } = require('sawtooth-sdk/signing')
 // const fs = require('fs')
@@ -19,50 +17,52 @@
 // console.log(signer)
 // // let status = signer.verify(sig, msg, PubKey)
 // console.log(status)
-const express = require("express")
+const express = require("express");
 const cors = require("cors");
-const BodyParser = require('body-parser');
+const BodyParser = require("body-parser");
 const app = express();
-const PORT = 5000
-app.options('*', cors());
+const PORT = 5000;
+app.options("*", cors());
 app.use(cors());
-app.use(BodyParser.json({ limit: `50mb` }))
-const axios = require("axios")
+app.use(BodyParser.json({ limit: `50mb` }));
+const axios = require("axios");
 
 app.post("/proxy/connection", async (req, res) => {
-    let data = req.body
+    let data = req.body;
     // console.log(data)
-    let result = await axios.post('http://192.168.1.145:7000/request/connection/',
-            {
-                header: {'Content-Type': 'application/json'},
-                body: data
-            }
-        )
-    console.log(result.data)
-    if(result.data.status) {
-        res.status(200).send(result.data)
+    let result = await axios.post(
+        "http://192.168.1.145:7000/request/connection/",
+        {
+            header: { "Content-Type": "application/json" },
+            body: data,
+        }
+    );
+    console.log(result.data);
+    if (result.data.status) {
+        res.status(200).send(result.data);
     } else {
-        res.status(402).send("connection failed")
-    }  
-})      
+        res.status(402).send("connection failed");
+    }
+});
 
 app.get("/proxy/credential", async (req, res) => {
-    let params = req.query
+    let params = req.query;
     // console.log(data)
-    let result = await axios.get('http://192.168.1.145:7000/request/credential/',
-            {
-                header: {'Content-Type': 'application/json'},
-                params: params
-            }
-        )
-    console.log(result.data)
-    if(result.data) {
-        res.status(200).send(result.data)
+    let result = await axios.get(
+        "http://192.168.1.145:7000/request/credential/",
+        {
+            header: { "Content-Type": "application/json" },
+            params: params,
+        }
+    );
+    console.log(result.data);
+    if (result.data) {
+        res.status(200).send(result.data);
     } else {
-        res.status(402).send("credential does not exist")
-    }  
-})
+        res.status(402).send("credential does not exist");
+    }
+});
 
 app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`)
+    console.log(`server running on port ${PORT}`);
 });

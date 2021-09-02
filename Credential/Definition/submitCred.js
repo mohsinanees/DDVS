@@ -1,5 +1,4 @@
-
-const CredentialTransaction = require('./CredentialTransaction');
+const CredentialTransaction = require("./CredentialTransaction");
 
 // let record = {
 //   authorizerVerKey: authorPubKey,
@@ -21,36 +20,49 @@ const CredentialTransaction = require('./CredentialTransaction');
 //   }
 // }
 
-function submitCredential(authorizerPrivateKeyHex, authorizerDid, authorizerVerKey, sourceDid, sourceVerKey, destDid, 
-  destVerKey, schemaID, schemaVersion, credentialTitle, nonce, issuerSignature, 
-  authorizerSignature, credentialBody) {
+function submitCredential(
+    authorizerPrivateKeyHex,
+    authorizerDid,
+    authorizerVerKey,
+    sourceDid,
+    sourceVerKey,
+    destDid,
+    destVerKey,
+    schemaID,
+    schemaVersion,
+    credentialTitle,
+    nonce,
+    issuerSignature,
+    authorizerSignature,
+    credentialBody
+) {
     let record = {
-      authorizerDid: authorizerDid,
-      authorizerVerKey: authorizerVerKey,
-      sourceDid: sourceDid,
-      sourceVerKey: sourceVerKey,
-      destDid: destDid,
-      destVerKey: destVerKey,
-      schemaID: schemaID,
-      schemaVersion: schemaVersion,
-      credentialTitle: credentialTitle,
-      nonce: nonce,
-      issuerSignature: issuerSignature,
-      authorizerSignature: authorizerSignature,
-      credentialBody: credentialBody
-    }
-    const client = new CredentialTransaction(authorizerPrivateKeyHex)
-    const records = [record]
-    const transactions = client.CreateTransactions(records)
-    const batch = client.CreateBatch(transactions)
-    try{
-      let status = client.SubmitBatch(batch)
-      // console.log(decodeUriComponent(status))
-      return true
+        authorizerDid: authorizerDid,
+        authorizerVerKey: authorizerVerKey,
+        sourceDid: sourceDid,
+        sourceVerKey: sourceVerKey,
+        destDid: destDid,
+        destVerKey: destVerKey,
+        schemaID: schemaID,
+        schemaVersion: schemaVersion,
+        credentialTitle: credentialTitle,
+        nonce: nonce,
+        issuerSignature: issuerSignature,
+        authorizerSignature: authorizerSignature,
+        credentialBody: credentialBody,
+    };
+    const client = new CredentialTransaction(authorizerPrivateKeyHex);
+    const records = [record];
+    const transactions = client.CreateTransactions(records);
+    const batch = client.CreateBatch(transactions);
+    try {
+        let status = client.SubmitBatch(batch);
+        // console.log(decodeUriComponent(status))
+        return true;
     } catch (err) {
-      console.log(err)
-      return false
+        console.log(err);
+        return false;
     }
 }
 
-module.exports = submitCredential
+module.exports = submitCredential;

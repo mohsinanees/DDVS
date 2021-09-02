@@ -1,5 +1,4 @@
-
-const SchemaTransaction = require('./SchemaTransaction')
+const SchemaTransaction = require("./SchemaTransaction");
 
 // let record = {
 //   sourceVerKey: authorPubKey,
@@ -20,28 +19,37 @@ const SchemaTransaction = require('./SchemaTransaction')
 //   }
 // }
 
-function submitSchema(authorizerPrivateKeyHex, sourceDid, sourceVerKey, version, title, nonce, signature, attributes) {
-  let record = {
-    sourceDid: sourceDid,
-    sourceVerKey: sourceVerKey,
-    version: version,
-    title: title,
-    nonce: nonce,
-    signature: signature,
-    attributes: attributes
-  };
-  const client = new SchemaTransaction(authorizerPrivateKeyHex);
-  const records = [record];
-  const transactions = client.CreateTransactions(records);
-  const batch = client.CreateBatch(transactions);
-  try {
-    let status  = client.SubmitBatch(batch);
-    // console.log(decodeUriComponent(status))
-    return true;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
+function submitSchema(
+    authorizerPrivateKeyHex,
+    sourceDid,
+    sourceVerKey,
+    version,
+    title,
+    nonce,
+    signature,
+    attributes
+) {
+    let record = {
+        sourceDid: sourceDid,
+        sourceVerKey: sourceVerKey,
+        version: version,
+        title: title,
+        nonce: nonce,
+        signature: signature,
+        attributes: attributes,
+    };
+    const client = new SchemaTransaction(authorizerPrivateKeyHex);
+    const records = [record];
+    const transactions = client.CreateTransactions(records);
+    const batch = client.CreateBatch(transactions);
+    try {
+        let status = client.SubmitBatch(batch);
+        // console.log(decodeUriComponent(status))
+        return true;
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
 }
 
-module.exports = submitSchema
+module.exports = submitSchema;
