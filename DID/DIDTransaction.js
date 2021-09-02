@@ -37,7 +37,7 @@ class DIDTransaction {
                 signature: record.signature,
                 role: record.role,
             };
-
+            // console.log(record);
             const payloadBytes = cbor.encode(payload);
             const transactionHeaderBytes = protobuf.TransactionHeader.encode({
                 familyName: DID_FAMILY,

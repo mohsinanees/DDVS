@@ -126,14 +126,14 @@ app.post("/request/connection/", async (req, res) => {
     console.log(req.body);
     let requestData = req.body;
     let type = requestData.type;
-    let requesterDid = requestData.sourceDid;
-    let requesterVerKey = requestData.sourceVerKey;
+    let requesterDid = requestData.requesterDid;
+    let requesterVerKey = requestData.requesterVerKey;
     let destDid = requestData.destDid;
     let destVerKey = requestData.destVerKey;
     let nonce = requestData.nonce;
-    let requesterSignature = requestData.signature;
+    let requesterSignature = requestData.requesterSignature;
     try {
-        let requestStatus = submitRequest(
+        submitRequest(
             issuerPrivateKey.asHex(),
             studentPrivateKey.asHex(),
             type,
@@ -143,33 +143,36 @@ app.post("/request/connection/", async (req, res) => {
             destVerKey,
             nonce,
             requesterSignature
-        );
-        // console.log(requestStatus)
-        if (requestStatus) {
-            let issuerSignature = issuer.sign(Buffer.from(nonce));
-            let didStatus = submitDid(
-                issuerPrivateKey.asHex(),
-                issuerDid,
-                issuerVerKey,
-                requesterDid,
-                requesterVerKey,
-                nonce,
-                issuerSignature,
-                roles.standard
-            );
-            if (didStatus) {
-                res.status(200).send({
-                    status: "OK",
-                    sourceDid: issuerDid,
-                    destDid: requesterDid,
-                });
-            } else {
-                res.status(402).send("Connection Failed");
-            }
-        }
+        )
     } catch (err) {
         console.log(err);
         res.status(400).send("Request failed");
+        throw err;
+    }
+    // console.log(requestStatus)
+    try {
+        let issuerSignature = issuer.sign(Buffer.from(nonce));
+        let didStatus = submitDid(
+            issuerPrivateKey.asHex(),
+            issuerDid,
+            issuerVerKey,
+            requesterDid,
+            requesterVerKey,
+            nonce,
+            issuerSignature,
+            roles.standard
+        );
+        if (didStatus) {
+            res.status(200).send({
+                status: "OK",
+                sourceDid: issuerDid,
+                destDid: requesterDid,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).send("DID registration failed");
+        throw err;
     }
 });
 

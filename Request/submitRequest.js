@@ -44,10 +44,10 @@ function submitRequest(
     try {
         let status = client.SubmitBatch(batch);
         // console.log(decodeUriComponent(status))
-        return true;
+        return status;
     } catch (err) {
         console.log(err);
-        return false;
+        throw err;
     }
 }
 
@@ -87,10 +87,10 @@ function submitAuthorizationRequest(
     try {
         let status = client.SubmitBatch(batch);
         // console.log(decodeUriComponent(status))
-        return true;
+        return status;
     } catch (err) {
         console.log(err);
-        return false;
+        throw err;
     }
 }
 module.exports = { submitRequest, submitAuthorizationRequest };

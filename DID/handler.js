@@ -37,6 +37,7 @@ class DIDHandler extends TransactionHandler {
         let payload = await DIDPayload.fromBytes(
             transactionProcessRequest.payload
         );
+        // console.log("\n\n"+payload);
         let header = transactionProcessRequest.header;
         let approverAddress = _genDIDAddress(payload.sourceVerKey);
         let requesterAddress = _genDIDAddress(payload.destVerKey);
@@ -82,14 +83,14 @@ const logger = (message) => {
             "\tDID_processor" +
             "]"
         ).green +
-            "\n" +
-            `SourceDid: ${message.sourceDid}\n` +
-            `SourceVerKey: ${message.sourceVerKey}\n` +
-            `DestDid: ${message.destDid}\n` +
-            `DestVerKey: ${message.destVerKey}\n` +
-            `nonce: ${message.nonce}\n` +
-            `Signature: ${message.signature} \n` +
-            `Role: ${message.role}`
+        "\n" +
+        `SourceDid: ${message.sourceDid}\n` +
+        `SourceVerKey: ${message.sourceVerKey}\n` +
+        `DestDid: ${message.destDid}\n` +
+        `DestVerKey: ${message.destVerKey}\n` +
+        `nonce: ${message.nonce}\n` +
+        `Signature: ${message.signature} \n` +
+        `Role: ${message.role}`
     );
 };
 
