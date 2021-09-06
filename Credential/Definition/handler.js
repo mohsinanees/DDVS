@@ -66,7 +66,7 @@ class CredentialHandler extends TransactionHandler {
             requesterAddress,
             credentialAddress,
         ]);
-        console.log(result);
+        // console.log(result);
 
         // verify authorizer, issuer, requester, schema
         let authorizerStatus = authorizerVerify(
@@ -100,6 +100,7 @@ class CredentialHandler extends TransactionHandler {
                         result,
                         requesterAddress
                     );
+                    console.log(requesterStatus);
                     if (requesterStatus) {
                         let credentialStatus = credentialExist(
                             result,

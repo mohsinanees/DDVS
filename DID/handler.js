@@ -46,7 +46,7 @@ class DIDHandler extends TransactionHandler {
         let res = await context.getState([approverAddress, requesterAddress]);
         let requesterStatus = requesterExist(res, requesterAddress);
         if (requesterStatus) {
-            throw new InvalidTransaction("requester already exist");
+            throw new InvalidTransaction("Requester already exists");
         }
         if (payload.role != roles.authorizer && payload.role != roles.issuer) {
             let issuerStatus = issuerVerify(
@@ -83,14 +83,14 @@ const logger = (message) => {
             "\tDID_processor" +
             "]"
         ).green +
-        "\n" +
-        `SourceDid: ${message.sourceDid}\n` +
-        `SourceVerKey: ${message.sourceVerKey}\n` +
-        `DestDid: ${message.destDid}\n` +
-        `DestVerKey: ${message.destVerKey}\n` +
-        `nonce: ${message.nonce}\n` +
-        `Signature: ${message.signature} \n` +
-        `Role: ${message.role}`
+            "\n" +
+            `SourceDid: ${message.sourceDid}\n` +
+            `SourceVerKey: ${message.sourceVerKey}\n` +
+            `DestDid: ${message.destDid}\n` +
+            `DestVerKey: ${message.destVerKey}\n` +
+            `nonce: ${message.nonce}\n` +
+            `Signature: ${message.signature} \n` +
+            `Role: ${message.role}`
     );
 };
 

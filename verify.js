@@ -7,11 +7,14 @@
 *                                                                                 */
 const cbor = require("cbor");
 var colors = require("colors");
+const axios = require("axios");
 const {
     Secp256k1Context,
     Secp256k1PublicKey,
 } = require("sawtooth-sdk/signing/secp256k1");
 const { authorizer, issuer, standard } = require("./config").roles;
+const { _genDIDAddress } = require("./DID/namespace");
+const { _genCredentialAddress } = require("./Credential/Definition/namespace");
 
 const setEntry = (context, address, stateValue) => {
     let entries = {
@@ -79,6 +82,41 @@ const issuerVerify = (
     return false;
 };
 
+const issuerVerifyWithHttp = async (
+    issuerDid,
+    issuerVerKey,
+    issuerSignature,
+    nonce
+) => {
+    let base64EncodedIssuer = await axios.get(
+        `http://127.0.0.1:8008/state/${issuerDid}`
+    );
+    if (base64EncodedIssuer) {
+        let encodedIssuer = Buffer.from(
+            base64EncodedIssuer["data"]["data"],
+            "base64"
+        );
+        if (encodedIssuer && encodedIssuer.length > 0) {
+            let issuerStateValue = await cbor.decodeFirstSync(encodedIssuer);
+            if (
+                issuerDid === issuerStateValue.destDid &&
+                issuerVerKey === issuerStateValue.destVerKey
+            ) {
+                if (
+                    issuerStateValue.role == issuer ||
+                    issuerStateValue.role == authorizer
+                ) {
+                    let PubKey = Secp256k1PublicKey.fromHex(issuerVerKey);
+                    let signer = new Secp256k1Context();
+                    let status = signer.verify(issuerSignature, nonce, PubKey);
+                    return status;
+                }
+            }
+        }
+    }
+    return false;
+};
+
 const requesterVerify = (
     possibleAddressValues,
     address,
@@ -127,24 +165,30 @@ const schemaVerify = (
     return false;
 };
 
-const credentialVerify = (
-    possibleAddressValues,
-    address,
-    issuerDid,
-    issuerVerKey,
-    issuerSignature,
-    nonce
-) => {
-    let stateValueRep = possibleAddressValues[address];
-    let stateValue;
-    if (stateValueRep && stateValueRep.length > 0) {
-        stateValue = cbor.decodeFirstSync(stateValueRep);
-        if (issuerDid == stateValue.sourceDid) {
-            if (issuerVerKey == stateValue.sourceVerKey) {
-                let PubKey = Secp256k1PublicKey.fromHex(issuerVerKey);
-                let signer = new Secp256k1Context();
-                let status = signer.verify(issuerSignature, nonce, PubKey);
-                return status;
+const credentialVerifyWithHttp = async (credentialID) => {
+    let credentialAddress = _genCredentialAddress(credentialID);
+    let base64EncodedCredential = await axios.get(
+        `http://127.0.0.1:8008/state/${credentialAddress}`
+    );
+    if (base64EncodedCredential) {
+        let encodedCredential = Buffer.from(
+            base64EncodedCredential["data"]["data"],
+            "base64"
+        );
+        if (encodedCredential && encodedCredential.length > 0) {
+            let credential = await cbor.decodeFirstSync(encodedCredential);
+            let issuerStatus = issuerVerifyWithHttp(
+                credential.sourceDid,
+                credential.sourceVerKey,
+                credential.issuerSignature,
+                credential.nonce
+            );
+            if (issuerStatus) {
+                let result = {
+                    credential: credential,
+                    credentialStatus: "Verified",
+                };
+                return result;
             }
         }
     }
@@ -174,5 +218,6 @@ module.exports = {
     schemaVerify,
     requesterExist,
     credentialExist,
+    credentialVerifyWithHttp,
     setEntry,
 };

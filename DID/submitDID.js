@@ -35,7 +35,7 @@ function submitDid(
         return true;
     } catch (err) {
         console.log(err);
-        return false;
+        throw err;
     }
 }
 

@@ -34,6 +34,7 @@ function submitRequest(
         nonce: nonce,
         signature: signature,
     };
+    // console.log(record);
     const client = new RequestTransaction(
         approverPrivateKey,
         requesterPrivateKey
@@ -44,7 +45,7 @@ function submitRequest(
     try {
         let status = client.SubmitBatch(batch);
         // console.log(decodeUriComponent(status))
-        return status;
+        return true;
     } catch (err) {
         console.log(err);
         throw err;
@@ -77,6 +78,7 @@ function submitAuthorizationRequest(
         nonce: nonce,
         signature: signature,
     };
+    // console.log(record);
     const client = new RequestTransaction(
         authorizerPrivateKeyHex,
         requesterPrivateKeyHex
@@ -87,7 +89,7 @@ function submitAuthorizationRequest(
     try {
         let status = client.SubmitBatch(batch);
         // console.log(decodeUriComponent(status))
-        return status;
+        return true;
     } catch (err) {
         console.log(err);
         throw err;

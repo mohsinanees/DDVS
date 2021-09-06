@@ -6,10 +6,15 @@
     ----------------------------------------------------------------------------------
 *                                                                                       */
 const express = require("express");
+const axios = require("axios");
 const cors = require("cors");
+const cbor = require("cbor");
 const fs = require("fs");
 const { createContext, CryptoFactory } = require("sawtooth-sdk/signing");
-const { Secp256k1PrivateKey } = require("sawtooth-sdk/signing/secp256k1");
+const {
+    Secp256k1PrivateKey,
+    Secp256k1PublicKey,
+} = require("sawtooth-sdk/signing/secp256k1");
 const { createHash } = require("crypto");
 const BodyParser = require("body-parser");
 const {
@@ -21,7 +26,9 @@ const submitSchema = require("./Credential/Schema/submitSchema");
 const submitCredential = require("./Credential/Definition/submitCred");
 const { _genDIDAddress } = require("./DID/namespace");
 const { roles, request_type } = require("./config");
+const { credentialVerifyWithHttp } = require("./verify");
 const { error } = require("console");
+const { json } = require("express");
 
 const app = express();
 const PORT = 7000;
@@ -45,10 +52,14 @@ var studentVerKey = null;
 var studentDid = null;
 
 const init = () => {
-    // generate authorizer
+    // generate private keys for the users
     authorizerPrivatekey = Secp256k1PrivateKey.newRandom();
+    issuerPrivateKey = Secp256k1PrivateKey.newRandom();
+    studentPrivateKey = Secp256k1PrivateKey.newRandom();
+
+    // generate authorizer
     let authorizerContext = createContext("secp256k1");
-    var authorizerObj = new CryptoFactory(authorizerContext);
+    let authorizerObj = new CryptoFactory(authorizerContext);
     authorizer = authorizerObj.newSigner(authorizerPrivatekey);
     authorizerVerKey = authorizer.getPublicKey().asHex();
     authorizerDid = _genDIDAddress(authorizerVerKey);
@@ -56,24 +67,26 @@ const init = () => {
         .update(JSON.stringify({ authorizerDid, authorizerVerKey }))
         .digest("hex");
     let authorizerSignature = authorizer.sign(Buffer.from(authorizernonce));
-    let authorizerDidStatus = submitDid(
-        authorizerPrivatekey.asHex(),
-        authorizerDid,
-        authorizerVerKey,
-        authorizerDid,
-        authorizerVerKey,
-        authorizernonce,
-        authorizerSignature,
-        roles.authorizer
-    );
-    if (!authorizerDidStatus) {
-        throw error;
+
+    try {
+        let authorizerDidStatus = submitDid(
+            authorizerPrivatekey.asHex(),
+            authorizerDid,
+            authorizerVerKey,
+            authorizerDid,
+            authorizerVerKey,
+            authorizernonce,
+            authorizerSignature,
+            roles.authorizer
+        );
+    } catch (err) {
+        console.log(err);
+        throw err;
     }
 
     // generate issuer
-    issuerPrivateKey = Secp256k1PrivateKey.newRandom();
     let issuerContext = createContext("secp256k1");
-    var issuerObj = new CryptoFactory(issuerContext);
+    let issuerObj = new CryptoFactory(issuerContext);
     issuer = issuerObj.newSigner(issuerPrivateKey);
     issuerVerKey = issuer.getPublicKey().asHex();
     issuerDid = _genDIDAddress(issuerVerKey);
@@ -83,28 +96,31 @@ const init = () => {
     let authorizerSignatureForIssuer = authorizer.sign(
         Buffer.from(issuernonce)
     );
-    let issuerDidStatus = submitDid(
-        authorizerPrivatekey.asHex(),
-        authorizerDid,
-        authorizerVerKey,
-        issuerDid,
-        issuerVerKey,
-        issuernonce,
-        authorizerSignatureForIssuer,
-        roles.issuer
-    );
-    if (!issuerDidStatus) {
+
+    try {
+        let issuerDidStatus = submitDid(
+            authorizerPrivatekey.asHex(),
+            authorizerDid,
+            authorizerVerKey,
+            issuerDid,
+            issuerVerKey,
+            issuernonce,
+            authorizerSignatureForIssuer,
+            roles.issuer
+        );
+    } catch (err) {
+        console.log(err);
         throw error;
     }
 
     // generate student
-    studentPrivateKey = Secp256k1PrivateKey.newRandom();
     let studentContext = createContext("secp256k1");
-    var studentObj = new CryptoFactory(studentContext);
+    let studentObj = new CryptoFactory(studentContext);
     student = studentObj.newSigner(studentPrivateKey);
     studentVerKey = student.getPublicKey().asHex();
     studentDid = _genDIDAddress(studentVerKey);
 
+    // write addresses to file
     const data = {
         authorizerPrivatekey: authorizerPrivatekey.asHex(),
         authorizerVerKey: authorizerVerKey,
@@ -122,6 +138,40 @@ const init = () => {
     });
 };
 
+const initWithObject = (addressesObject) => {
+    addressesObjectJSON = JSON.parse(addressesObject);
+
+    // initialize authorizer
+    authorizerPrivatekey = Secp256k1PrivateKey.fromHex(
+        addressesObjectJSON["authorizerPrivatekey"]
+    );
+    let authorizerContext = createContext("secp256k1");
+    let authorizerObj = new CryptoFactory(authorizerContext);
+    authorizer = authorizerObj.newSigner(authorizerPrivatekey);
+    authorizerVerKey = authorizer.getPublicKey().asHex();
+    authorizerDid = addressesObjectJSON["authorizerDid"];
+
+    // initialize issuer
+    issuerPrivateKey = Secp256k1PrivateKey.fromHex(
+        addressesObjectJSON["issuerPrivateKey"]
+    );
+    let issuerContext = createContext("secp256k1");
+    let issuerObj = new CryptoFactory(issuerContext);
+    issuer = issuerObj.newSigner(issuerPrivateKey);
+    issuerVerKey = issuer.getPublicKey().asHex();
+    issuerDid = addressesObjectJSON["issuerDid"];
+
+    // initialize student
+    studentPrivateKey = Secp256k1PrivateKey.fromHex(
+        addressesObjectJSON["studentPrivateKey"]
+    );
+    let studentContext = createContext("secp256k1");
+    let studentObj = new CryptoFactory(studentContext);
+    student = studentObj.newSigner(studentPrivateKey);
+    studentVerKey = student.getPublicKey().asHex();
+    studentDid = addressesObjectJSON["studentDid"];
+};
+
 app.post("/request/connection/", async (req, res) => {
     console.log(req.body);
     let requestData = req.body;
@@ -132,6 +182,7 @@ app.post("/request/connection/", async (req, res) => {
     let destVerKey = requestData.destVerKey;
     let nonce = requestData.nonce;
     let requesterSignature = requestData.requesterSignature;
+
     try {
         submitRequest(
             issuerPrivateKey.asHex(),
@@ -143,7 +194,7 @@ app.post("/request/connection/", async (req, res) => {
             destVerKey,
             nonce,
             requesterSignature
-        )
+        );
     } catch (err) {
         console.log(err);
         res.status(400).send("Request failed");
@@ -152,7 +203,7 @@ app.post("/request/connection/", async (req, res) => {
     // console.log(requestStatus)
     try {
         let issuerSignature = issuer.sign(Buffer.from(nonce));
-        let didStatus = submitDid(
+        submitDid(
             issuerPrivateKey.asHex(),
             issuerDid,
             issuerVerKey,
@@ -162,13 +213,11 @@ app.post("/request/connection/", async (req, res) => {
             issuerSignature,
             roles.standard
         );
-        if (didStatus) {
-            res.status(200).send({
-                status: "OK",
-                sourceDid: issuerDid,
-                destDid: requesterDid,
-            });
-        }
+        res.status(200).send({
+            status: "Connection successful",
+            sourceDid: issuerDid,
+            destDid: requesterDid,
+        });
     } catch (err) {
         console.log(err);
         res.status(400).send("DID registration failed");
@@ -177,10 +226,10 @@ app.post("/request/connection/", async (req, res) => {
 });
 
 app.get("/request/credential/", async (req, res) => {
-    console.log(req.query);
     let requestData = req.query;
     let type = requestData.type;
     let requesterDid = requestData.sourceDid;
+    // console.log(requesterDid);
     let requesterVerKey = requestData.sourceVerKey;
     let destDid = requestData.destDid;
     let destVerKey = requestData.destVerKey;
@@ -198,7 +247,6 @@ app.get("/request/credential/", async (req, res) => {
             nonce,
             requesterSignature
         );
-        // console.log(requestStatus)
         if (requestStatus) {
             let authorizerSignature = authorizer.sign(Buffer.from(nonce));
             let schemaVersion = "0.7";
@@ -246,7 +294,7 @@ app.get("/request/credential/", async (req, res) => {
                     .digest("hex");
                 let issuerSignature = issuer.sign(Buffer.from(nonce));
                 requestStatus = submitAuthorizationRequest(
-                    authorizerPrivatekey.asHex(),
+                    issuerPrivateKey.asHex(),
                     studentPrivateKey.asHex(),
                     requestType,
                     issuerDid,
@@ -278,7 +326,7 @@ app.get("/request/credential/", async (req, res) => {
                         credentialBody
                     );
                     if (credentialStatus) {
-                        res.status(200).send({
+                        let credentialResponse = {
                             authorizerDid: authorizerDid,
                             authorizerVerKey: authorizerVerKey,
                             issuerDid: issuerDid,
@@ -301,7 +349,15 @@ app.get("/request/credential/", async (req, res) => {
                             issuerSignature: issuerSignature,
                             authorizerSignature: authorizerSignature,
                             credentialBody: credentialBody,
-                        });
+                        };
+                        fs.writeFile(
+                            "credential.json",
+                            JSON.stringify(credentialResponse, null, 2),
+                            (err) => {
+                                console.log(err);
+                            }
+                        );
+                        res.status(200).send(credentialResponse);
                     } else {
                         res.status(404).send(
                             "Requested Credential not available"
@@ -318,15 +374,42 @@ app.get("/request/credential/", async (req, res) => {
         }
     } catch (err) {
         console.log(err);
-        res.status(402).send("Connection Failed");
+        res.status(402).send("Credential request failed");
+    }
+});
+
+app.get("/verify", async (req, res) => {
+    let credentialID = req.query.credentialID;
+    try {
+        let result = await credentialVerifyWithHttp(credentialID);
+        if (result) {
+            console.log(result);
+            res.status(200).send({
+                credential: result.credential,
+                Status: result.credentialStatus,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).send("Invalid Credential");
     }
 });
 
 app.listen(PORT, () => {
     try {
-        init();
+        let addressesObject = fs.readFileSync("./addresses.json", "utf-8");
+        // console.log(addressesObject);
+        if (addressesObject) {
+            initWithObject(addressesObject);
+        } else {
+            init();
+        }
     } catch (err) {
-        console.log(err);
+        try {
+            init();
+        } catch (err) {
+            console.log(err);
+        }
     }
     console.log(`server running on port ${PORT}`);
 });
