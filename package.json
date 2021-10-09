@@ -11,7 +11,7 @@
     "author": "mohsinanees",
     "license": "",
     "dependencies": {
-        "axios": "^0.19.1",
+        "axios": "^0.21.2",
         "cbor": "^3.0.0",
         "colors": "^1.4.0",
         "cors": "^2.8.5",
